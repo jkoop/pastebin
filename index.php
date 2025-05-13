@@ -175,7 +175,7 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
             file_put_contents($type_name, "text/plain");
         } else if ($file !== null) {
             move_uploaded_file($file["tmp_name"], $content_name);
-            file_put_contents($type_name, preg_replace("/[^\w]/", "", $file["type"]));
+            file_put_contents($type_name, substr(preg_replace("/\s/", " ", $file["type"]), 0, 100));
         } else {
             header("Location: /");
             exit;
