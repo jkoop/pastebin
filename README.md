@@ -2,6 +2,8 @@
 
 This is my simple pastebin server.
 
+![](screenshot.png)
+
 Features:
 
 - password for paster
