@@ -40,8 +40,7 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
         exit;
     } else if ($method == "HEAD" || $method == "GET") {
         if (strlen($path) > MAX_PATH_LENGTH) {
-            http_response_code(404);
-            exit;
+            goto not_found;
         }
 
         $content_time = @filemtime($path . ".content");
@@ -57,7 +56,15 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
             $type_fp === false ||
             ($content_time !== false && $expires < 1)
         ) {
+            not_found:
             http_response_code(404);
+            header("Content-Type: text/html; charset=utf-8");
+            header("Content-Length: " . filesize("/404.html"));
+
+            if ($method != "OPTIONS" && $method != "HEAD") {
+                readfile("/404.html");
+            }
+
             exit;
         }
 
