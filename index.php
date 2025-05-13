@@ -53,14 +53,24 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
         exit;
     } else if ($method == "HEAD" || $method == "GET") {
         if (strlen($path) > 220) {
-            goto not_found;
+            goto gone;
         }
 
         $requested_path = $path;
         $path = crockford32_normalize($path);
 
         if ($path === null) {
-            goto not_found;
+            gone:
+            http_response_code(410);
+            header("Content-Type: text/html; charset=utf-8");
+            header("Content-Length: " . filesize("/410.html"));
+            header("Cache-Control: public, max-age=31536000, immutable");
+
+            if ($method != "OPTIONS" && $method != "HEAD") {
+                readfile("/410.html");
+            }
+
+            exit;
         }
 
         $path = strtolower($path);
@@ -77,10 +87,10 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
             $type_fp === false ||
             ($content_time !== false && $expires < 1)
         ) {
-            not_found:
             http_response_code(404);
             header("Content-Type: text/html; charset=utf-8");
             header("Content-Length: " . filesize("/404.html"));
+            header("Cache-Control: private");
 
             if ($method != "OPTIONS" && $method != "HEAD") {
                 readfile("/404.html");

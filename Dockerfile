@@ -20,6 +20,7 @@ COPY index.php /var/www/html/index.php
 # copy html files
 COPY 401.html /401.html
 COPY 404.html /404.html
+COPY 410.html /410.html
 COPY index.html /index.html
 
 # Set working directory
