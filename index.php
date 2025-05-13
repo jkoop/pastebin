@@ -141,7 +141,7 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
         $extra_html = <<<HTML
         <script>
         p = document.createElement("p");
-        p.innerText = "Files live for $expire seconds.";
+        p.innerText = "Pastes live for $expire seconds.";
         document.querySelector("h1").after(p);
         </script>
         HTML;

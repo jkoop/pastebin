@@ -26,7 +26,10 @@ textarea {
 <h1>Pastebin</h1>
 <form action="/" method="post" enctype="multipart/form-data" onsubmit="(b=this.querySelector('button')).disabled=true;b.innerText='Pasting...'">
 <textarea name="text" placeholder="Some text content or attach a file... (either/or! not both!)"></textarea>
-<input name="file" type="file">
+<label>
+<input name="file" type="file"><br>
+<span style="font-size:small">Max 2000MB</span>
+</label>
 <button>Paste!</button>
 <div style="text-align:right">
 <a href="https://github.com/jkoop/pastebin">https://github.com/jkoop/pastebin</a>

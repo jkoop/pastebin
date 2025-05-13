@@ -6,6 +6,10 @@ RUN apt-get update && apt-get install -y nginx \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Configure PHP settings for larger uploads
+RUN echo "upload_max_filesize = 2000M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 2000M" >> /usr/local/etc/php/conf.d/uploads.ini
+
 # Copy Nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
