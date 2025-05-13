@@ -31,8 +31,8 @@ if (getcwd() != "/data") dd("FATAL: Directory /data is missing. You probably for
 exec("find -mmin +" . ceil(EXPIRES_SECONDS / 60) . " -delete");
 
 if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
-	header("Location: " . ICON_URL);
-	exit;
+    header("Location: " . ICON_URL);
+    exit;
 } else if ($path != "") {
     if ($method == "OPTIONS") {
         header("Allow: OPTIONS, GET, HEAD");
@@ -81,7 +81,14 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
     if (PASSWORD !== null) {
         if (($_SERVER["PHP_AUTH_PW"] ?? null) !== PASSWORD) {
             http_response_code(401);
+            header("Content-Type: text/html; charset=utf-8");
+            header("Content-Length: " . filesize("/401.html"));
             header('WWW-Authenticate: Basic realm="Protected", charset="UTF-8"');
+
+            if ($method != "OPTIONS" && $method != "HEAD") {
+                readfile("/401.html");
+            }
+
             exit;
         }
     }

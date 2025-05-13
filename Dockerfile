@@ -13,7 +13,8 @@ COPY nginx.conf /etc/nginx/nginx.conf
 RUN mkdir -p /var/www/html
 COPY index.php /var/www/html/index.php
 
-# copy form html
+# copy html files
+COPY 401.html /401.html
 COPY index.html /index.html
 
 # Set working directory
