@@ -1,0 +1,144 @@
+<?php
+
+function dd(string $message): never {
+    http_response_code(500);
+    header("Content-Type: text/plain");
+
+    if ($method != "HEAD" && $method != "OPTIONS") {
+        echo $message . "\n";
+    }
+
+    exit;
+}
+
+define("EXPIRES_SECONDS", (int) ($_ENV["EXPIRES_SECONDS"] ?? (60 * 60 * 24 * 7))); // 1 week
+define("MAX_PATH_LENGTH", (int) ($_ENV["MAX_PATH_LENGTH"] ?? 8));
+define("DOMAIN_NAME", $_ENV["DOMAIN_NAME"] ?? "example.com");
+define("PASSWORD", $_ENV["PASSWORD"] ?? null);
+
+if (EXPIRES_SECONDS < 60) dd("EXPIRES_SECONDS is too low");
+if (MAX_PATH_LENGTH < 4) dd("MAX_PATH_LENGTH is too low");
+if (MAX_PATH_LENGTH > 220) dd("MAX_PATH_LENGTH is too high");
+
+$method = $_SERVER["REQUEST_METHOD"];
+$path = str_replace("/", "", $_SERVER["REQUEST_URI"]);
+
+@chdir("/data");
+if (getcwd() != "/data") dd("FATAL: Directory /data is missing. You probably forgot to bind a mount for it.");
+
+// delete old files
+exec("find -mmin +" . ceil(EXPIRES_SECONDS / 60) . " -delete");
+
+if ($path != "") {
+    if ($method == "OPTIONS") {
+        header("Allow: OPTIONS, GET, HEAD");
+        header("Cache-Control: public, max-age=31536000, immutable");
+        exit;
+    } else if ($method == "HEAD" || $method == "GET") {
+        if (strlen($path) > MAX_PATH_LENGTH) {
+            http_response_code(404);
+            exit;
+        }
+
+        $content_time = @filemtime($path . ".content");
+        $content_length = @filesize($path . ".content");
+        $content_fp = @fopen($path . ".content", "r");
+        $type_fp = @fopen($path . ".type", "r");
+        $expires = $content_time + EXPIRES_SECONDS - time();
+
+        if (
+            $content_time === false ||
+            $content_length === false ||
+            $content_fp === false ||
+            $type_fp === false ||
+            ($content_time !== false && $expires < 1)
+        ) {
+            http_response_code(404);
+            exit;
+        }
+
+        header("Content-Type: " . stream_get_contents($type_fp));
+        header("Content-Length: " . $content_length);
+        header("Cache-Control: public, max-age=" . $expires . ", immutable");
+        header("Last-Modified: " . gmdate("D, d M Y H:i:s \G\M\T", $content_time));
+
+        if ($method == "GET") {
+            fpassthru($content_fp);
+        }
+
+        exit;
+    } else {
+        http_response_code(405);
+        header("Allow: OPTIONS, GET, HEAD");
+        header("Cache-Control: public, max-age=31536000, immutable");
+        exit;
+    }
+} else {
+    if (PASSWORD !== null) {
+        if (($_SERVER["PHP_AUTH_PW"] ?? null) !== PASSWORD) {
+            http_response_code(401);
+            header('WWW-Authenticate: Basic realm="Protected", charset="UTF-8"');
+            exit;
+        }
+    }
+
+    if ($method == "OPTIONS") {
+        header("Allow: OPTIONS, GET, HEAD, POST");
+        header("Cache-Control: public, max-age=31536000, immutable");
+        exit;
+    } else if ($method == "HEAD" || $method == "GET") {
+        $expire = number_format(EXPIRES_SECONDS);
+        $extra_html = <<<HTML
+        <script>
+        p = document.createElement("p");
+        p.innerText = "Files live for $expire seconds.";
+        document.querySelector("h1").after(p);
+        </script>
+        HTML;
+
+        header("Content-Type: text/html; charset=utf-8");
+        header("Content-Length: " . filesize("/index.html") + strlen($extra_html));
+        header("Cache-Control: public, max-age=600");
+
+        if ($method == "GET") {
+            readfile("/index.html");
+            echo $extra_html;
+        }
+
+        exit;
+    } else if ($method == "POST") {
+        $name = random_bytes(MAX_PATH_LENGTH);
+        $name = base64_encode($name);
+        $name = str_replace("/", "", $name);
+        $name = str_replace("+", "", $name);
+        $name = substr($name, 0, MAX_PATH_LENGTH);
+        $type_name = $name . ".type";
+        $content_name = $name . ".content";
+
+        $text = $_POST["text"] ?? "";
+        $text = trim($text);
+
+        $file = $_FILES["file"] ?? null;
+        if ($file !== null && $file["error"] != UPLOAD_ERR_OK) $file = null;
+
+        if ($text != "") {
+            file_put_contents($content_name, $text);
+            file_put_contents($type_name, "text/plain");
+        } else if ($file !== null) {
+            move_uploaded_file($file["tmp_name"], $content_name);
+            file_put_contents($type_name, preg_replace("/[^\w]/", "", $file["type"]));
+        } else {
+            header("Location: /");
+            exit;
+        }
+
+        header("Content-Type: text/plain");
+        echo "https://" . DOMAIN_NAME . "/" . $name . "\n";
+        exit;
+    } else {
+        http_response_code(405);
+        header("Allow: OPTIONS, GET, HEAD, POST");
+        header("Cache-Control: public, max-age=31536000, immutable");
+        exit;
+    }
+}

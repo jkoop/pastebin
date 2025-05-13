@@ -1,0 +1,5 @@
+services:
+  pastebin:
+    environment:
+      DOMAIN_NAME: p.short.co
+      PASSWORD: Change-This-Passphrase

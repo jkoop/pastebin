@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="A super simple pastebin server">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pastebin</title>
+<link rel="icon" href="https://www.w3.org/Icons/burst.png" type="image/png">
+<style>
+body {
+    max-width: 800px;
+    margin-inline: auto;
+    padding-inline: 0.5rem;
+}
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+</style>
+</head>
+<body>
+<h1>Pastebin</h1>
+<form action="/" method="post" enctype="multipart/form-data" onsubmit="(b=this.querySelector('button')).disabled=true;b.innerText='Pasting...'">
+<textarea name="text" placeholder="Some text content or attach a file... (either/or! not both!)"></textarea>
+<input name="file" type="file">
+<button>Paste!</button>
+<div style="text-align:right">
+<a href="https://github.com/jkoop/pastebin">https://github.com/jkoop/pastebin</a>
+</div>
+</form>
+</body>
+</html>

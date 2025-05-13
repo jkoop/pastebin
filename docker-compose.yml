@@ -1,0 +1,8 @@
+services:
+  pastebin:
+    build: .
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - ./data:/data
