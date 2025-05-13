@@ -1,5 +1,18 @@
 <?php
 
+function crockford32_normalize(string $string): string|null {
+    $string = strtoupper($string);
+    $string = str_replace(
+        search: ["O", "I", "L", "U"], // this U replacement is non-standard
+        replace: ["0", "1", "1", "V"],
+        subject: $string,
+    );
+    if (preg_match("/[^0-9A-HJKMNP-TV-Z]/", $string)) {
+        return null; // input string contained invalid chars
+    }
+    return $string;
+}
+
 function dd(string $message): never {
     http_response_code(500);
     header("Content-Type: text/plain");
@@ -39,10 +52,18 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
         header("Cache-Control: public, max-age=31536000, immutable");
         exit;
     } else if ($method == "HEAD" || $method == "GET") {
-        if (strlen($path) > MAX_PATH_LENGTH) {
+        if (strlen($path) > 220) {
             goto not_found;
         }
 
+        $requested_path = $path;
+        $path = crockford32_normalize($path);
+
+        if ($path === null) {
+            goto not_found;
+        }
+
+        $path = strtolower($path);
         $content_time = @filemtime($path . ".content");
         $content_length = @filesize($path . ".content");
         $content_fp = @fopen($path . ".content", "r");
@@ -63,6 +84,17 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
 
             if ($method != "OPTIONS" && $method != "HEAD") {
                 readfile("/404.html");
+            }
+
+            exit;
+        }
+
+        if ($path != $requested_path) {
+            header("Location: /" . $path);
+            header("Content-Type: text/plain");
+
+            if ($method == "GET") {
+                echo "Go to /" . $path . "\n";
             }
 
             exit;
@@ -125,10 +157,9 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
 
         exit;
     } else if ($method == "POST") {
-        $name = random_bytes(MAX_PATH_LENGTH);
-        $name = base64_encode($name);
-        $name = str_replace("/", "", $name);
-        $name = str_replace("+", "", $name);
+        $name = exec("head -c 140 /dev/urandom | base32 -w 0");
+        $name = crockford32_normalize($name);
+        $name = strtolower($name);
         $name = substr($name, 0, MAX_PATH_LENGTH);
         $type_name = $name . ".type";
         $content_name = $name . ".content";

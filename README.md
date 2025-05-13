@@ -10,8 +10,8 @@ Features:
 - no password for readers
 - no list of pastes
 - short random path
+- unambiguous paths
 - TODO: file deduplication on disk
-- TODO: unambiguous paths
 
 ## Install
 
