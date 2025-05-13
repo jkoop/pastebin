@@ -13,6 +13,7 @@ function dd(string $message): never {
 
 define("EXPIRES_SECONDS", (int) ($_ENV["EXPIRES_SECONDS"] ?? (60 * 60 * 24 * 7))); // 1 week
 define("MAX_PATH_LENGTH", (int) ($_ENV["MAX_PATH_LENGTH"] ?? 8));
+define("ICON_URL", $_ENV["ICON_URL"] ?? "https://www.w3.org/Icons/burst.png");
 define("DOMAIN_NAME", $_ENV["DOMAIN_NAME"] ?? "example.com");
 define("PASSWORD", $_ENV["PASSWORD"] ?? null);
 
@@ -29,7 +30,10 @@ if (getcwd() != "/data") dd("FATAL: Directory /data is missing. You probably for
 // delete old files
 exec("find -mmin +" . ceil(EXPIRES_SECONDS / 60) . " -delete");
 
-if ($path != "") {
+if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
+	header("Location: " . ICON_URL);
+	exit;
+} else if ($path != "") {
     if ($method == "OPTIONS") {
         header("Allow: OPTIONS, GET, HEAD");
         header("Cache-Control: public, max-age=31536000, immutable");
