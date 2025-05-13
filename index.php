@@ -148,7 +148,7 @@ if (preg_match("/^favicon\.[A-Za-z0-9]{1,5}/", $path)) {
 
         header("Content-Type: text/html; charset=utf-8");
         header("Content-Length: " . filesize("/index.html") + strlen($extra_html));
-        header("Cache-Control: public, max-age=600");
+        header("Cache-Control: private");
 
         if ($method == "GET") {
             readfile("/index.html");
