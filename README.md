@@ -11,6 +11,7 @@ Features:
 - no list of pastes
 - short random path
 - TODO: file deduplication on disk
+- TODO: unambiguous paths
 
 ## Install
 
