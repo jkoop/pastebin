@@ -13,6 +13,14 @@ Features:
 - unambiguous paths
 - TODO: file deduplication on disk
 
+## Usage
+
+- **Browser:** Go to https://p.example.com/ and log in with any username and your password
+- **curl**: _The content type will not be set; a receiving browser will probably just download it without displaying it_
+  ```sh
+  curl -F 'file=@path/to/file' 'https://anyuser:Change-This-Passphrase@p.example.com'
+  ```
+
 ## Install
 
 1. clone the repo and `cd` into it
