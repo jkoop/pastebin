@@ -1,5 +1,5 @@
 services:
   pastebin:
     environment:
-      DOMAIN_NAME: p.short.co
+      DOMAIN_NAME: p.example.com
       PASSWORD: Change-This-Passphrase
